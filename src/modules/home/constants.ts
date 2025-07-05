@@ -1,0 +1,1 @@
+export const DEFAULT_GB_COLOR = "#F5F4F5";
