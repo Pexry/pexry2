@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    siteName: 'Nawazel',
-    title: 'Nawazel - Digital Marketplace',
-    description: 'Buy and sell digital products on Nawazel marketplace',
+    siteName: 'Pexry',
+    title: 'Pexry - Digital Marketplace',
+    description: 'Buy and sell digital products on Pexry marketplace',
   },
   twitter: {
     card: 'summary_large_image',
