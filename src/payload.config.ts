@@ -19,8 +19,16 @@ import { Media } from './collections/Media'
 import { Orders } from './collections/Orders';
 import { Tenants } from './collections/Tenants'
 import { Reviews } from './collections/Reviews';
+import { Disputes } from './collections/Disputes';
 import { Categories } from './collections/Categories'
 import { Products } from './collections/Products'
+import { WithdrawalRequests } from './collections/WithdrawalRequests';
+import { Notifications } from './collections/Notifications';
+import { Conversations } from './collections/Conversations';
+import { UserAgents } from './collections/UserAgents';
+import { SupportTickets } from './collections/SupportTickets';
+
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -32,7 +40,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Products, Tags, Tenants, Orders, Reviews],
+  collections: [Users, Media, Categories, Products, Tags, Tenants, Orders, Reviews, Disputes, WithdrawalRequests, Notifications, Conversations, UserAgents, SupportTickets],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

@@ -28,20 +28,70 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload({ config });
     const orderId = body.order_id;
     if (orderId) {
-      // Try to find the order first
-      const foundOrders = await payload.find({
+      // Enhanced debugging - try multiple search approaches
+      console.log(`Searching for order with transactionId: "${orderId}"`);
+      
+      // Try exact match first
+      let foundOrders = await payload.find({
         collection: 'orders',
         where: { transactionId: { equals: orderId } },
+        limit: 10,
       });
-      console.log('Order search result:', foundOrders);
-      if (foundOrders.docs && foundOrders.docs.length > 0) {
-        // Update the order status to 'paid' and store NowPayments payment_id
-        const updateResult = await payload.update({
+      console.log('Exact match search result:', foundOrders);
+      
+      // If no exact match, try case-insensitive search (this handles whitespace issues too)
+      if (foundOrders.docs.length === 0) {
+        console.log('No exact match found, trying case-insensitive search...');
+        const caseInsensitiveSearch = await payload.find({
           collection: 'orders',
-          where: { transactionId: { equals: orderId } },
-          data: { status: 'paid', nowPaymentsPaymentId: body.payment_id },
+          where: { 
+            transactionId: { 
+              like: orderId 
+            } 
+          },
+          limit: 10,
         });
-        console.log(`Order ${orderId} marked as paid. Update result:`, updateResult);
+        console.log('Case-insensitive search result:', caseInsensitiveSearch);
+        
+        // Use the case-insensitive result if found
+        if (caseInsensitiveSearch.docs.length > 0) {
+          foundOrders = caseInsensitiveSearch;
+          console.log('Using case-insensitive search result');
+        } else {
+          // If still no match, let's see what orders exist
+          console.log('No case-insensitive match found, checking recent orders...');
+          const recentOrders = await payload.find({
+            collection: 'orders',
+            sort: '-createdAt',
+            limit: 5,
+          });
+          console.log('Recent orders (last 5):', recentOrders.docs.map(order => ({
+            id: order.id,
+            transactionId: order.transactionId,
+            status: order.status,
+            createdAt: order.createdAt,
+            amount: order.amount
+          })));
+        }
+      }
+      
+      if (foundOrders.docs && foundOrders.docs.length > 0) {
+        const order = foundOrders.docs[0];
+        if (order) {
+          console.log(`Found order with ID: ${order.id}, current status: ${order.status}`);
+          
+          // Update the order status to 'paid' and store NowPayments payment_id
+          const updateResult = await payload.update({
+            collection: 'orders',
+            id: order.id, // Use the order ID instead of where clause for more reliable update
+            data: { 
+              status: 'paid', 
+              nowPaymentsPaymentId: body.payment_id.toString(),
+              updatedAt: new Date().toISOString()
+            },
+          });
+          console.log(`Order ${order.id} (transactionId: "${order.transactionId}") marked as paid. Update result:`, updateResult);
+        }
       } else {
         console.log(`No order found with transactionId = ${orderId}`);
       }

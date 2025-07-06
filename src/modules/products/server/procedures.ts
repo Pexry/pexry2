@@ -78,6 +78,7 @@ export const productsRouter = createTRPCRouter({
         return {
             ...product,
             image: product.image as Media | null,
+            coverImage: product.coverImage as Media | null,
             tenant: product.tenant as Tenant & { image: Media | null },
             reviewRating,
             reviewCount: reviews.totalDocs,

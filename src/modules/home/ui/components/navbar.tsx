@@ -124,7 +124,7 @@ export const Navbar = () => {
                 asChild
                 className="border-l border-t-0 border-b-0 border-r-0 px-5 h-full rounded-none bg-black text-white hover:bg-teal-300 hover:text-black transition-colors text-lg"
                 >
-                <Link href="/admin">Dashboard</Link>
+                <Link href="/dashboard">Dashboard</Link>
                 </Button>
 
                 <Button
