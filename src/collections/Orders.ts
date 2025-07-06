@@ -6,7 +6,7 @@ export const Orders: CollectionConfig = {
   slug: "orders",
   admin: {
     useAsTitle: "id",
-    //hidden: ({ user }) => !isSuperAdmin(user),
+    hidden: ({ user }) => !isSuperAdmin(user),
   },
   access: {
     read: () => true,

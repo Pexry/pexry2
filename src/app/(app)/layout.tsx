@@ -4,6 +4,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { Toaster } from "@/components/ui/sonner";
 import { TRPCReactProvider } from "@/trpc/client";
+import { faviconMetadata } from "@/lib/favicon";
 
 import "./globals.css";
 
@@ -13,8 +14,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Nawazel - Digital Marketplace",
-  description: "Buy and sell digital products on Nawazel marketplace",
+  title: "Pexry",
+  description: "Buy and sell digital products on Pexry marketplace",
+  ...faviconMetadata,
 };
 
 export default function RootLayout({
