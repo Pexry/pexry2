@@ -13,8 +13,37 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
-      required: true,
+      required: false,
+    },
+    {
+      name: 'caption',
+      type: 'text',
+      required: false,
     },
   ],
-  upload: true,
+  upload: {
+    // Configure image resizing and optimization
+    imageSizes: [
+      {
+        name: 'thumbnail',
+        width: 300,
+        height: 300,
+        position: 'centre',
+      },
+      {
+        name: 'medium',
+        width: 800,
+        height: 600,
+        position: 'centre',
+      },
+      {
+        name: 'large',
+        width: 1200,
+        height: 900,
+        position: 'centre',
+      },
+    ],
+    adminThumbnail: 'thumbnail',
+    mimeTypes: ['image/*', 'application/pdf'],
+  },
 }

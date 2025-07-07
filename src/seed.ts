@@ -2,7 +2,6 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 
 const categories = [
-
   {
     name: "Other",
     color: "#f2f2f2",
@@ -19,7 +18,7 @@ const categories = [
       { name: "Career Growth", slug: "career-growth" },
     ],
   },
-    {
+  {
     name: "Photography",
     color: "#f2f2f2",
     slug: "photography",
@@ -42,7 +41,6 @@ const categories = [
       { name: "Diet", slug: "diet" },
     ],
   },
-
   {
     name: "Education",
     color: "#f2f2f2",
@@ -59,7 +57,7 @@ const categories = [
     color: "#f2f2f2",
     slug: "social-media",
     subcategories: [
-      { name: "Others", slug: "others" },
+      { name: "Others in Social Media", slug: "others-in-social-media" },
       { name: "Telegram", slug: "telegram" },
       { name: "TikTok", slug: "tiktok" },
       { name: "Instagram", slug: "instagram" },
@@ -79,11 +77,11 @@ const categories = [
     ],
   },
   {
-  name: "Subscriptions",
+    name: "Subscriptions",
     color: "#f2f2f2",
     slug: "subscriptions",
     subcategories: [
-      { name: "Other Subs", slug: "other-subs" },
+      { name: "Others in Subs", slug: "others-in-subs" },
       { name: "Mobile Apps Subs", slug: "mobile-apps-subs" },
       { name: "Canva Pro", slug: "canva-pro" },
       { name: "Netflix", slug: "netflix" },
@@ -123,21 +121,22 @@ const categories = [
       { name: "Gigs & Side Projects", slug: "gigs-side-projects" },
       { name: "Investing", slug: "investing" },
       { name: "Management & Leadership", slug: "management-leadership" },
-      { name: "Marketing & Sales", slug: "marketing-sales",},
+      { name: "Marketing & Sales", slug: "marketing-sales" },
       { name: "Personal Finance", slug: "personal-finance" },
       { name: "Trading", slug: "trading" },
     ],
   },
   {
-    name: "Drawing & Painting",
+    name: "Gift Cards",
     color: "#f2f2f2",
-    slug: "drawing-painting",
+    slug: "gift-cards",
     subcategories: [
-      { name: "Watercolor", slug: "watercolor" },
-      { name: "Acrylic", slug: "acrylic" },
-      { name: "Oil", slug: "oil" },
-      { name: "Pastel", slug: "pastel" },
-      { name: "Charcoal", slug: "charcoal" },
+      { name: "Others in GiftCards", slug: "others-in-giftcards" },
+      { name: "Google Card", slug: "google-card" },
+      { name: "PlayStation Card", slug: "playstation-card" },
+      { name: "Apple Card", slug: "apple-card" },
+      { name: "Xbox Card", slug: "xbox-card" },
+      { name: "Nintendo Card", slug: "nintendo-card" },
     ],
   },
   {
@@ -157,63 +156,100 @@ const categories = [
     color: "#f2f2f2",
     slug: "all",
   },
-]
-const seed = async () => {
-    const payload = await getPayload ({ config });
+];
 
-    // Create admin tenant
-    const adminTenant= await payload.create({
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+const retry = async <T>(fn: () => Promise<T>, retries = 3, delayMs = 500): Promise<T> => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      if (err.code === 24 && i < retries - 1) {
+        console.warn(`LockTimeout on attempt ${i + 1}, retrying...`);
+        await delay(delayMs);
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error("Max retries exceeded.");
+};
+
+const seed = async () => {
+  const payload = await getPayload({ config });
+
+  console.log("Connected to Payload...");
+
+  // Create admin tenant
+  const adminTenant = await retry(() =>
+    payload.create({
       collection: "tenants",
       data: {
         name: "admin",
         slug: "admin",
       },
-    });
+    })
+  );
+  console.log("✔ Admin tenant created");
 
-    // Create admin user
-    await payload.create({
+  // Create admin user
+  await retry(() =>
+    payload.create({
       collection: "users",
       data: {
-        email: "admin@demo.com",
-        password: "demo",
+        email: "do.not.reply.pexry@gmail.com",
+        password: "Noah2711!",
         roles: ["super-admin"],
         username: "admin",
         tenants: [
           {
-            tenant: adminTenant.id
+            tenant: adminTenant.id,
           },
-        ]
+        ],
       },
       overrideAccess: true,
-    });
+    })
+  );
+  console.log("✔ Admin user created");
 
-    for (const category of categories) {
-        const parentCategory = await payload.create({
-            collection: "categories",
-            data: {
-                name: category.name,
-                slug: category.slug,
-                color: category.color,
-                parent: null,
-            },
-        });
-        for (const subCategory of category.subcategories || []){
-            await payload.create({
-                collection: "categories",
-                data: {
-                    name: subCategory.name,
-                    slug: subCategory.slug,
-                    parent: parentCategory.id,
-                },
-            });
-        }
+  // Seed categories
+  for (const category of categories) {
+    const parentCategory = await retry(() =>
+      payload.create({
+        collection: "categories",
+        data: {
+          name: category.name,
+          slug: category.slug,
+          color: category.color,
+          parent: null,
+        },
+      })
+    );
+    console.log(`✔ Category: ${category.name}`);
+
+    for (const subCategory of category.subcategories || []) {
+      await retry(() =>
+        payload.create({
+          collection: "categories",
+          data: {
+            name: subCategory.name,
+            slug: subCategory.slug,
+            parent: parentCategory.id,
+          },
+        })
+      );
+      console.log(`   └─ Subcategory: ${subCategory.name}`);
+      await delay(50); // optional: slow down for shared clusters
     }
-}
+  }
+};
+
 try {
   await seed();
-  console.log('Seeding completed successfully');
+  console.log("✅ Seeding completed successfully");
   process.exit(0);
 } catch (error) {
-  console.error('Error during seeding:', error);
+  console.error("❌ Error during seeding:", error);
   process.exit(1);
 }

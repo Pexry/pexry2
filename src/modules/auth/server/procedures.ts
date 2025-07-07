@@ -110,4 +110,33 @@ export const authRouter = createTRPCRouter({
 
         return data;
     }),
+    
+    forgotPassword: baseProcedure
+        .input(forgotPasswordSchema)
+        .mutation(async ({ input, ctx }) => {
+            // Create a support ticket for admin to review
+            await ctx.db.create({
+                collection: "support-tickets",
+                data: {
+                    subject: "Password Reset Request",
+                    description: `Password reset request with the following information:
+
+Email: ${input.email}
+Username: ${input.username}
+Listed Products: ${input.listedProducts}
+Number of Products: ${input.numberOfProducts}
+
+Please verify the user's information and assist with password reset.`,
+                    status: "open",
+                    priority: "high", // High priority for password resets
+                    category: "account", // Account issue category
+                    // user field is optional, so we don't include it for password reset requests
+                },
+            });
+
+            return {
+                success: true,
+                message: "Password reset request submitted successfully. An agent will contact you within 24 hours.",
+            };
+        }),
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCartIcon, Store, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export const GlobalCartButton = () => {
                         </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                        {tenantsWithProducts.length} store{tenantsWithProducts.length !== 1 ? 's' : ''} • {totalItemsGlobal} item{totalItemsGlobal !== 1 ? 's' : ''}
+                        {tenantsWithProducts.length} store{tenantsWithProducts.length !== 1 ? 's' : ''} • {totalItemsGlobal} item{totalItemsGlobal !== 1 ? 's' : ''} 
                     </p>
                 </div>
 
@@ -92,18 +92,29 @@ interface TenantCartItemProps {
 
 const TenantCartItem = ({ tenantSlug, productCount, onCheckout, showSeparator }: TenantCartItemProps) => {
     const trpc = useTRPC();
-    
-    // Use regular query instead of suspense query to handle errors gracefully
+    const [mounted, setMounted] = useState(false);
+
+    console.log(`TenantCartItem: Rendering for tenantSlug: ${tenantSlug}, Mounted: ${mounted}`);
+
+    // Always call useQuery - React hooks must be called unconditionally
     const { data: tenant, isLoading, error } = useQuery(
         trpc.tenants.getOne.queryOptions({ slug: tenantSlug })
     );
+
+    useEffect(() => {
+        setMounted(true);
+        console.log(`TenantCartItem: Mounted for tenantSlug: ${tenantSlug}`);
+    }, [tenantSlug]);
+
+    console.log(`TenantCartItem: useQuery status for ${tenantSlug} - isLoading: ${isLoading}, error: ${error ? error.message : 'none'}, data: ${!!tenant}`);
 
     const handleCheckout = () => {
         onCheckout();
         window.location.href = `${generateTenantURL(tenantSlug)}/checkout`;
     };
 
-    if (isLoading) {
+    // Only show loading state when not mounted or actually loading
+    if (!mounted || isLoading) {
         return (
             <>
                 <Card className="border-0 shadow-none">
@@ -138,7 +149,7 @@ const TenantCartItem = ({ tenantSlug, productCount, onCheckout, showSeparator }:
                                 <div>
                                     <h4 className="font-medium text-sm text-red-600">Store unavailable</h4>
                                     <p className="text-xs text-muted-foreground">
-                                        {productCount} item{productCount !== 1 ? 's' : ''}
+                                        {productCount} item{productCount !== 1 ? 's' : ''} 
                                     </p>
                                 </div>
                             </div>
@@ -170,7 +181,7 @@ const TenantCartItem = ({ tenantSlug, productCount, onCheckout, showSeparator }:
                             <div>
                                 <h4 className="font-medium text-sm">{tenant.name}</h4>
                                 <p className="text-xs text-muted-foreground">
-                                    {productCount} item{productCount !== 1 ? 's' : ''}
+                                    {productCount} item{productCount !== 1 ? 's' : ''} 
                                 </p>
                             </div>
                         </div>
@@ -188,3 +199,5 @@ const TenantCartItem = ({ tenantSlug, productCount, onCheckout, showSeparator }:
         </>
     );
 };
+
+

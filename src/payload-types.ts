@@ -75,6 +75,12 @@ export interface Config {
     tenants: Tenant;
     orders: Order;
     reviews: Review;
+    disputes: Dispute;
+    'withdrawal-requests': WithdrawalRequest;
+    notifications: Notification;
+    conversations: Conversation;
+    'user-agents': UserAgent;
+    'support-tickets': SupportTicket;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -93,6 +99,12 @@ export interface Config {
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    disputes: DisputesSelect<false> | DisputesSelect<true>;
+    'withdrawal-requests': WithdrawalRequestsSelect<false> | WithdrawalRequestsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
+    'user-agents': UserAgentsSelect<false> | UserAgentsSelect<true>;
+    'support-tickets': SupportTicketsSelect<false> | SupportTicketsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -197,7 +209,9 @@ export interface Tenant {
  */
 export interface Media {
   id: string;
-  alt: string;
+  alt?: string | null;
+  caption?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -209,6 +223,32 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    medium?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -244,11 +284,16 @@ export interface Product {
   category?: (string | null) | Category;
   tags?: (string | Tag)[] | null;
   image?: (string | null) | Media;
+  /**
+   * Main cover image displayed on product pages
+   */
+  coverImage?: (string | null) | Media;
   refundPolicy?: ('no-refunds' | '30-day' | '14-day' | '7-day' | '3-day' | '1-day') | null;
   deliveryType: 'file' | 'text';
   deliveryText?: string | null;
   file?: (string | null) | Media;
   isArchived?: boolean | null;
+  vendor?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -311,6 +356,227 @@ export interface Review {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disputes".
+ */
+export interface Dispute {
+  id: string;
+  order: string | Order;
+  buyer: string | User;
+  seller: string | User;
+  subject: string;
+  description: string;
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  category:
+    | 'product-not-received'
+    | 'product-not-as-described'
+    | 'refund-request'
+    | 'delivery-issue'
+    | 'payment-issue'
+    | 'other';
+  evidence?:
+    | {
+        file?: (string | null) | Media;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  messages?:
+    | {
+        author: string | User;
+        message: string;
+        timestamp: string;
+        /**
+         * Internal messages visible only to admin
+         */
+        isInternal?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  resolution?: string | null;
+  resolvedBy?: (string | null) | User;
+  resolvedAt?: string | null;
+  /**
+   * Order amount to be held during dispute
+   */
+  orderAmount: number;
+  /**
+   * Amount put on hold (90% of order amount)
+   */
+  holdAmount: number;
+  /**
+   * Whether funds have been released after dispute resolution
+   */
+  fundsReleased?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "withdrawal-requests".
+ */
+export interface WithdrawalRequest {
+  id: string;
+  user: string | User;
+  amount: number;
+  status: 'pending' | 'approved' | 'paid' | 'rejected';
+  adminNote?: string | null;
+  paidAt?: string | null;
+  paidBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  /**
+   * The user who should receive this notification
+   */
+  user: string | User;
+  /**
+   * Notification title/subject
+   */
+  title: string;
+  /**
+   * Detailed notification message
+   */
+  message: string;
+  /**
+   * Type of notification for categorization
+   */
+  type:
+    | 'sale'
+    | 'dispute_opened'
+    | 'dispute_resolved'
+    | 'withdrawal_paid'
+    | 'withdrawal_rejected'
+    | 'message'
+    | 'general';
+  /**
+   * Whether the user has read this notification
+   */
+  read?: boolean | null;
+  /**
+   * Additional data related to the notification (order ID, dispute ID, etc.)
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * URL to redirect user when notification is clicked (optional)
+   */
+  actionUrl?: string | null;
+  /**
+   * Notification priority level
+   */
+  priority?: ('low' | 'normal' | 'high' | 'urgent') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: string;
+  subject: string;
+  type: 'conversation' | 'support';
+  participants: (string | User)[];
+  /**
+   * Agent assigned to handle this support request
+   */
+  assignedAgent?: (string | null) | User;
+  category?: ('payment' | 'dispute' | 'account' | 'technical' | 'refund' | 'other') | null;
+  priority?: ('low' | 'normal' | 'high' | 'urgent') | null;
+  status: 'active' | 'waiting' | 'resolved' | 'closed';
+  messages?:
+    | {
+        sender: string | User;
+        message: string;
+        timestamp: string;
+        isRead?: boolean | null;
+        /**
+         * Internal notes visible only to agents (for support requests)
+         */
+        isInternal?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Related product (optional)
+   */
+  product?: (string | null) | Product;
+  /**
+   * Related order (optional)
+   */
+  order?: (string | null) | Order;
+  lastMessageAt?: string | null;
+  lastMessageBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-agents".
+ */
+export interface UserAgent {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  status: 'active' | 'inactive' | 'suspended';
+  availability: 'available' | 'unavailable' | 'busy';
+  permissions?: {
+    handlePayouts?: boolean | null;
+    handleSupportTickets?: boolean | null;
+    handleLiveChat?: boolean | null;
+    viewUserData?: boolean | null;
+    manageDisputes?: boolean | null;
+  };
+  lastLoginAt?: string | null;
+  assignedChats?: number | null;
+  totalChatsHandled?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support-tickets".
+ */
+export interface SupportTicket {
+  id: string;
+  /**
+   * The user requesting support (optional for password reset requests)
+   */
+  user?: (string | null) | User;
+  subject: string;
+  description: string;
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  category: 'payment' | 'dispute' | 'account' | 'technical' | 'refund' | 'other';
+  messages?:
+    | {
+        sender: 'user' | 'support';
+        message: string;
+        timestamp: string;
+        id?: string | null;
+      }[]
+    | null;
+  assignedTo?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -347,6 +613,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: string | Review;
+      } | null)
+    | ({
+        relationTo: 'disputes';
+        value: string | Dispute;
+      } | null)
+    | ({
+        relationTo: 'withdrawal-requests';
+        value: string | WithdrawalRequest;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: string | Notification;
+      } | null)
+    | ({
+        relationTo: 'conversations';
+        value: string | Conversation;
+      } | null)
+    | ({
+        relationTo: 'user-agents';
+        value: string | UserAgent;
+      } | null)
+    | ({
+        relationTo: 'support-tickets';
+        value: string | SupportTicket;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -423,6 +713,8 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -434,6 +726,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        medium?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -460,11 +786,13 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   tags?: T;
   image?: T;
+  coverImage?: T;
   refundPolicy?: T;
   deliveryType?: T;
   deliveryText?: T;
   file?: T;
   isArchived?: T;
+  vendor?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -515,6 +843,151 @@ export interface ReviewsSelect<T extends boolean = true> {
   rating?: T;
   product?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disputes_select".
+ */
+export interface DisputesSelect<T extends boolean = true> {
+  order?: T;
+  buyer?: T;
+  seller?: T;
+  subject?: T;
+  description?: T;
+  status?: T;
+  priority?: T;
+  category?: T;
+  evidence?:
+    | T
+    | {
+        file?: T;
+        description?: T;
+        id?: T;
+      };
+  messages?:
+    | T
+    | {
+        author?: T;
+        message?: T;
+        timestamp?: T;
+        isInternal?: T;
+        id?: T;
+      };
+  resolution?: T;
+  resolvedBy?: T;
+  resolvedAt?: T;
+  orderAmount?: T;
+  holdAmount?: T;
+  fundsReleased?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "withdrawal-requests_select".
+ */
+export interface WithdrawalRequestsSelect<T extends boolean = true> {
+  user?: T;
+  amount?: T;
+  status?: T;
+  adminNote?: T;
+  paidAt?: T;
+  paidBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  user?: T;
+  title?: T;
+  message?: T;
+  type?: T;
+  read?: T;
+  metadata?: T;
+  actionUrl?: T;
+  priority?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  subject?: T;
+  type?: T;
+  participants?: T;
+  assignedAgent?: T;
+  category?: T;
+  priority?: T;
+  status?: T;
+  messages?:
+    | T
+    | {
+        sender?: T;
+        message?: T;
+        timestamp?: T;
+        isRead?: T;
+        isInternal?: T;
+        id?: T;
+      };
+  product?: T;
+  order?: T;
+  lastMessageAt?: T;
+  lastMessageBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-agents_select".
+ */
+export interface UserAgentsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  password?: T;
+  status?: T;
+  availability?: T;
+  permissions?:
+    | T
+    | {
+        handlePayouts?: T;
+        handleSupportTickets?: T;
+        handleLiveChat?: T;
+        viewUserData?: T;
+        manageDisputes?: T;
+      };
+  lastLoginAt?: T;
+  assignedChats?: T;
+  totalChatsHandled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support-tickets_select".
+ */
+export interface SupportTicketsSelect<T extends boolean = true> {
+  user?: T;
+  subject?: T;
+  description?: T;
+  status?: T;
+  priority?: T;
+  category?: T;
+  messages?:
+    | T
+    | {
+        sender?: T;
+        message?: T;
+        timestamp?: T;
+        id?: T;
+      };
+  assignedTo?: T;
   updatedAt?: T;
   createdAt?: T;
 }

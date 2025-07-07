@@ -26,6 +26,7 @@ import{
 
 import { loginSchema } from "../../schemas";
 import { useTRPC } from "@/trpc/client";
+import { ForgotPasswordForm } from "../components/forgot-password-form";
 
 const poppins = Poppins({
     subsets: ["latin"],
@@ -67,6 +68,11 @@ const login = useMutation(trpc.auth.login.mutationOptions({
     return (
         <div className="grid grid-cols-1 lg:grid-cols-5">
             <div className="bg-[#F4F4F0] h-screen w-full lg:col-span-3 overflow-y-auto">
+                {showForgotPassword ? (
+                    <div className="flex items-center justify-center min-h-screen p-4">
+                        <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+                    </div>
+                ) : (
                     <Form {...form}>
                        <form
                             onSubmit={form.handleSubmit(onSubmit)}
@@ -138,6 +144,7 @@ const login = useMutation(trpc.auth.login.mutationOptions({
                        </Button>
                        </form>
                     </Form>
+                )}
             </div>
             <div 
                 className="h-screen w-full lg:col-span-2 hidden lg:block"
