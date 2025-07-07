@@ -7,7 +7,6 @@ interface CheckoutSidebarProps {
     onPurchase: () => void;
     isCanceled?: boolean;
     disabled?: boolean;
-    checkoutUrl?: string;
 }
 
 export const CheckoutSidebar =({
@@ -15,19 +14,7 @@ export const CheckoutSidebar =({
     onPurchase,
     isCanceled,
     disabled,
-    checkoutUrl,
 }: CheckoutSidebarProps) =>{
-    
-    const handleCheckout = () => {
-        if (total > 0 && checkoutUrl) {
-            // Open in new tab if total is greater than 0 and checkoutUrl is provided
-            window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-        } else {
-            // Call the original onPurchase function for other cases
-            onPurchase();
-        }
-    };
-
     return (
         <div className="border rounded-md overflow-hidden bg-white flex flex-col">
           <div className="flex items-center justify-between p-4 border-b">
@@ -40,12 +27,12 @@ export const CheckoutSidebar =({
           <div className="p-4 flex items-center justify-center">
             <Button
                 variant="elevated"
-                disabled={disabled || total === 0}
-                onClick={handleCheckout}
+                disabled={disabled}
+                onClick={onPurchase}
                 size="lg"
                 className="text-base w-full text-white bg-primary hover:bg-teal-300 hover:text-primary"
             >
-                {total === 0 ? 'Add items to cart' : 'Checkout'}
+                Checkout
             </Button>
           </div>
           {isCanceled &&(

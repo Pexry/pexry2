@@ -123,7 +123,6 @@ export const CheckoutView = ({ tenantSlug }: CheckoutViewProps) => {
               onPurchase={() => purchase.mutate({ tenantSlug, productIds })}
               isCanceled={states.cancel}
               disabled={purchase.isPending}
-              checkoutUrl={`${generateTenantURL(tenantSlug)}/checkout`}
             />
           </div>
 
