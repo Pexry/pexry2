@@ -6,6 +6,7 @@ interface OptimizedImageProps {
   alt: string;
   width?: number;
   height?: number;
+  fill?: boolean;
   className?: string;
   priority?: boolean;
   placeholder?: 'blur' | 'empty';
@@ -13,13 +14,15 @@ interface OptimizedImageProps {
   sizes?: string;
   quality?: number;
   style?: React.CSSProperties;
+  [key: string]: any;
 }
 
 export const OptimizedImage = ({
   src,
   alt,
-  width = 600,
-  height = 400,
+  width,
+  height,
+  fill = false,
   className = '',
   priority = false,
   placeholder = 'empty',
@@ -39,29 +42,34 @@ export const OptimizedImage = ({
     return (
       <div 
         className={`bg-gray-200 flex items-center justify-center ${className}`}
-        style={{ width, height, ...style }}
+        style={fill ? { position: 'absolute', inset: 0, ...style } : { width, height, ...style }}
       >
         <span className="text-gray-400 text-sm">Image failed to load</span>
       </div>
     );
   }
 
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      priority={priority}
-      placeholder="empty"
-      sizes={sizes}
-      quality={quality}
-      onError={handleError}
-      style={style}
-      {...props}
-    />
-  );
+  const imageProps: any = {
+    src,
+    alt,
+    className,
+    priority,
+    placeholder: "empty",
+    sizes,
+    quality,
+    onError: handleError,
+    style,
+    ...props
+  };
+
+  if (fill) {
+    imageProps.fill = true;
+  } else {
+    imageProps.width = width || 600;
+    imageProps.height = height || 400;
+  }
+
+  return <Image {...imageProps} />;
 };
 
 // Specific optimized components for common use cases

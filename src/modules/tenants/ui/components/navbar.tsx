@@ -53,7 +53,7 @@ export const Navbar = ({ slug }: Props) => {
                             alt={slug}
                         />
                     )}
-                    <p className="text-xl underline">{data.name} Store</p>
+                    <p className="text-xl underline">{data.name}</p>
                  </Link>
                 <CheckoutButton tenantSlug={slug} />
             </div>

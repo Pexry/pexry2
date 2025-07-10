@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useState } from "react";
+import { Fragment, useState, memo } from "react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { CheckIcon, LinkIcon, StarIcon } from "lucide-react";
@@ -31,7 +31,7 @@ interface ProductViewProps {
     tenantSlug: string;
 }
 
-export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
+export const ProductView = memo(function ProductView({ productId, tenantSlug }: ProductViewProps) {
     const trpc= useTRPC();
     const { data } = useSuspenseQuery(trpc.products.getOne.queryOptions({id: productId}));
 
@@ -51,8 +51,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
              <OptimizedImage 
               src={data.coverImage?.url || "/placeholder.png"}
               alt={data.name}
-              width={800}
-              height={205}
+              fill
               className="object-cover"
               priority
               sizes="(max-width: 768px) 100vw, 800px"
@@ -198,7 +197,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
          </div>
         </div>
     );
-};
+});
 
 export const ProductViewSkeleton = () => {
  return (
@@ -208,8 +207,7 @@ export const ProductViewSkeleton = () => {
              <OptimizedImage 
               src={"/placeholder.png"}
               alt="Placeholder"
-              width={800}
-              height={205}
+              fill
               className="object-cover"
              />
             </div>

@@ -17,10 +17,30 @@ const Page = async ({ searchParams }: Props) =>{
     const filters = await loadProductFilters(searchParams)
 
     const queryClient = getQueryClient();
-    void queryClient.prefetchInfiniteQuery(trpc.products.getMany.infiniteQueryOptions({
+    
+    // Prefetch product list
+    const productsQuery = trpc.products.getMany.infiniteQueryOptions({
         ...filters,
         limit: DEFAULT_LIMIT,
-    }));
+    });
+    
+    void queryClient.prefetchInfiniteQuery(productsQuery);
+    
+    // Get the first page of products to prefetch their stats
+    try {
+        const firstPage = await queryClient.fetchInfiniteQuery(productsQuery);
+        const firstPageProducts = firstPage.pages[0]?.docs || [];
+        
+        if (firstPageProducts.length > 0) {
+            const productIds = firstPageProducts.map(p => p.id);
+            void queryClient.prefetchQuery(
+                trpc.products.getStats.queryOptions({ productIds })
+            );
+        }
+    } catch (error) {
+        // Silently fail if prefetching stats fails
+        console.warn('Failed to prefetch product stats:', error);
+    }
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>

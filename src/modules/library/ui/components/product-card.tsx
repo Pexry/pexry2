@@ -31,8 +31,7 @@ const ProductCardComponent = ({
                     alt={name}
                     src={imageUrl || "/placeholder.png"}
                     className="object-cover"
-                    width={400}
-                    height={400}
+                    fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
             </div>
@@ -40,13 +39,14 @@ const ProductCardComponent = ({
                 <h2 className="text-lg font-medium line-clamp-4">{name}</h2>
                 <div className="flex items-center gap-2">
                     {tenantImageUrl && (
-                        <OptimizedImage 
-                            alt={tenantSlug}
-                            src={tenantImageUrl}
-                            width={16}
-                            height={16}
-                            className="rounded-full border shrink-0 size-[16px]"
-                        />
+                        <div className="relative size-[16px] shrink-0">
+                            <OptimizedImage 
+                                alt={tenantSlug}
+                                src={tenantImageUrl}
+                                fill
+                                className="rounded-full border"
+                            />
+                        </div>
                     )}
                     <p className="text-sm underline font-medium">{tenantSlug}</p>
                 </div>

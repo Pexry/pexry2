@@ -37,8 +37,7 @@ const CheckoutItemComponent = ({
               <OptimizedImage 
                 src={imageUrl || "/placeholder.png"}
                 alt={name}
-                width={120}
-                height={120}
+                fill
                 className="object-cover"
                 sizes="120px"
               />    

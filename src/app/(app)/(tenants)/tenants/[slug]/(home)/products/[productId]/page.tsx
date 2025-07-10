@@ -13,9 +13,21 @@ const Page = async ({ params }: Props) => {
     const { productId, slug } = await params;
 
     const queryClient = getQueryClient();
+    
+    // Prefetch tenant data
     void queryClient.prefetchQuery(trpc.tenants.getOne.queryOptions({
         slug
     }));
+    
+    // Prefetch product data for faster loading - using the correct procedure that ProductView expects
+    void queryClient.prefetchQuery(
+        trpc.products.getOne.queryOptions({ id: productId })
+    );
+    
+    // Prefetch product stats
+    void queryClient.prefetchQuery(
+        trpc.products.getStats.queryOptions({ productIds: [productId] })
+    );
 
     return(
         <HydrationBoundary state={dehydrate(queryClient)}>

@@ -1,8 +1,8 @@
 import React, { memo } from "react";
-import Link from "next/link";
 import {  StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { OptimizedImage } from "@/components/optimized-image";
+import { PreloadableLink } from "@/components/preloadable-link";
 
 import { formatCurrency, generateTenantURL } from "@/lib/utils";
 
@@ -39,15 +39,18 @@ export const ProductCard = memo(function ProductCard({
     };
 
     return (
-    <Link href={`${generateTenantURL(tenantSlug)}/products/${id}`}>
+    <PreloadableLink 
+        href={`${generateTenantURL(tenantSlug)}/products/${id}`} 
+        productId={id}
+        prefetch
+    >
         <div className="hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow border rounded-md bg-white overflow-hidden h-full flex flex-col">
-            <div className="aspect-square overflow-hidden">
+            <div className="aspect-square overflow-hidden relative">
                 <OptimizedImage 
                     alt={name}
-                    width={400}
-                    height={400}
+                    fill
                     src={imageUrl || "/placeholder.png"}
-                    className="object-cover w-full h-full"
+                    className="object-cover"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
                 />
             </div>
@@ -55,13 +58,14 @@ export const ProductCard = memo(function ProductCard({
                 <h2 className="text-lg font-medium line-clamp-4">{name}</h2>
                 <div className="flex items-center gap-2" onClick={handleUserClick}>
                     {tenantImageUrl && (
-                        <OptimizedImage 
-                            alt={tenantSlug}
-                            src={tenantImageUrl}
-                            width={16}
-                            height={16}
-                            className="rounded-full border shrink-0 size-[16px]"
-                        />
+                        <div className="relative size-[16px] shrink-0">
+                            <OptimizedImage 
+                                alt={tenantSlug}
+                                src={tenantImageUrl}
+                                fill
+                                className="rounded-full border"
+                            />
+                        </div>
                     )}
                     <p className="text-sm underline font-medium">{tenantSlug}</p>
                 </div>
@@ -89,7 +93,7 @@ export const ProductCard = memo(function ProductCard({
                 </div>
             </div>
         </div>
-    </Link>
+    </PreloadableLink>
 )
 });
 
