@@ -7,8 +7,12 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Store } from "lucide-react";
 import { generateTenantURL } from "@/lib/utils";
-import Image from "next/image";
-import { memo, useMemo } from "react";
+import { OptimizedImage } from "@/components/optimized-image";
+import { memo, useMemo, Suspense, lazy } from "react";
+import { LoadingSpinner } from "@/components/optimized-loading";
+
+// Lazy load heavy components
+const LazyTenantStats = lazy(() => Promise.resolve({ default: TenantStats }));
 
 function TenantStats({ tenant }: { tenant: any }) {
   const trpc = useTRPC();
@@ -133,7 +137,7 @@ const ProductsList = memo(function ProductsList({ tenantId }: { tenantId: string
               <CardContent className="p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <Image 
+                    <OptimizedImage 
                       src={imageUrl} 
                       alt={product.name} 
                       width={48}

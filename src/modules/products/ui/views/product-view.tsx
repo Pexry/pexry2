@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Fragment, useState } from "react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
@@ -12,6 +11,7 @@ import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { StarRating } from "@/components/star-rating";
+import { OptimizedImage } from "@/components/optimized-image";
 import { formatCurrency, generateTenantURL } from "@/lib/utils";
 
 const CartButton = dynamic(
@@ -48,11 +48,14 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
         <div className="px-4 lg:px-12 py-10">
          <div className="border rounded-sm bg-white overflow-hidden">
             <div className="relative aspect-[3.9] border-b">
-             <Image 
+             <OptimizedImage 
               src={data.coverImage?.url || "/placeholder.png"}
               alt={data.name}
-              fill
+              width={800}
+              height={205}
               className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 800px"
              />
             </div>
 
@@ -72,7 +75,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                <div className="px-6 py-4 flex items-center justify-center lg:border-r">
                  <Link href={generateTenantURL(tenantSlug)} className="flex items-center gap-2">
                    {data.tenant.image?.url && (
-                     <Image 
+                     <OptimizedImage 
                        src={data.tenant.image.url}
                        alt={data.tenant.name}
                        width={30}
@@ -202,10 +205,11 @@ export const ProductViewSkeleton = () => {
     <div className="px-4 lg:px-12 py-10">
          <div className="border rounded-sm bg-white overflow-hidden">
             <div className="relative aspect-[3.9] border-b">
-             <Image 
+             <OptimizedImage 
               src={"/placeholder.png"}
               alt="Placeholder"
-              fill
+              width={800}
+              height={205}
               className="object-cover"
              />
             </div>

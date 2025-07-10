@@ -1,7 +1,7 @@
-import React from "react";
+import React, { memo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {  StarIcon } from "lucide-react";
+import { OptimizedImage } from "@/components/optimized-image";
 
 interface ProductCardProps {
     id: string;
@@ -13,7 +13,7 @@ interface ProductCardProps {
     reviewCount: number;
 };
 
-export const ProductCard = ({
+const ProductCardComponent = ({
     id,
     name,
     imageUrl,
@@ -27,18 +27,20 @@ export const ProductCard = ({
     <Link prefetch href={`/library/${id}`}>
         <div className="hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow border rounded-md bg-white overflow-hidden h-full flex flex-col">
             <div className="relative aspect-square">
-                <Image 
+                <OptimizedImage 
                     alt={name}
-                    fill
                     src={imageUrl || "/placeholder.png"}
                     className="object-cover"
+                    width={400}
+                    height={400}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
             </div>
             <div className="p-4 border-y flex flex-col gap-3 flex-1">
                 <h2 className="text-lg font-medium line-clamp-4">{name}</h2>
                 <div className="flex items-center gap-2">
                     {tenantImageUrl && (
-                        <Image 
+                        <OptimizedImage 
                             alt={tenantSlug}
                             src={tenantImageUrl}
                             width={16}
@@ -61,6 +63,8 @@ export const ProductCard = ({
     </Link>
 )
 };
+
+export const ProductCard = memo(ProductCardComponent);
 
 export const ProductCardSkeleton = () => {
     return (

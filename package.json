@@ -6,14 +6,14 @@
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
     "build": "next build",
-    "build:analyze": "ANALYZE=true next build",
+    "build:analyze": "ANALYZE=true bun run build",
     "start": "next start",
     "start:prod": "NODE_ENV=production next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
-    "test:perf": "npx lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html",
-    "optimize:check": "node optimize-bundle.js",
+    "test:perf": "bunx lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html",
+    "optimize:check": "bun run optimize-bundle.js",
     "generate:types": "payload generate:types",
     "db:fresh": "payload migrate:fresh",
     "db:seed": "bun run src/seed.ts",
@@ -104,6 +104,7 @@
     "eslint-config-next": "15.2.4",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

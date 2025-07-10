@@ -1,5 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
+import { memo } from "react";
+import { OptimizedImage } from "@/components/optimized-image";
 
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -13,7 +14,8 @@ interface CheckoutItemProps {
     price: number;
     onRemove: () => void;
 }
-export const CheckoutItem = ({
+
+const CheckoutItemComponent = ({
     isLast,
     imageUrl,
     name,
@@ -22,7 +24,7 @@ export const CheckoutItem = ({
     tenantName,
     price,
     onRemove,
-}:CheckoutItemProps ) =>{
+}: CheckoutItemProps) => {
     return (
         <div
          className={cn(
@@ -32,11 +34,13 @@ export const CheckoutItem = ({
         >
           <div className="overflow-hidden border-r ">
             <div className="relative aspect-square h-full">
-              <Image 
+              <OptimizedImage 
                 src={imageUrl || "/placeholder.png"}
                 alt={name}
-                fill
+                width={120}
+                height={120}
                 className="object-cover"
+                sizes="120px"
               />    
             </div>  
           </div>  
@@ -62,5 +66,7 @@ export const CheckoutItem = ({
           </div>
         
         </div>
-    )
+    );
 };
+
+export const CheckoutItem = memo(CheckoutItemComponent);
